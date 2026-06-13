@@ -1,5 +1,52 @@
 # Immich Android TV
 
+## Nixplay frame build
+
+This build adds support for running on a [Nixplay](https://www.nixplay.com/) digital photo frame
+(based on work from [smerschjohann/Immix](https://github.com/smerschjohann/Immix)). On top of the
+standard Immich Android TV app it includes:
+
+- A motion sensor that turns the display on/off. The idle timeout is configured under
+  **Settings → View Settings → WakeLock** (default: 15 minutes, or "Always on" to never sleep).
+  On non-Nixplay hardware the sensor reports "always active", so the display is never turned off.
+- The remote's **POWER** button (or `F1`) toggles the screen on/off.
+- The app registers as a HOME/launcher app so the frame can boot straight into it.
+- Firebase (Crashlytics/Analytics) and Google Cast are removed, so the app builds without a
+  `google-services.json` and does not depend on Google Play Services.
+
+> Note: the motion sensor needs access to the frame's GPIO, so the app must be installed as a
+> **system app**. It reads the native `gpio_jni` library and only activates when `/etc/nix.model`
+> exists; otherwise it falls back gracefully.
+
+### Installing on the frame (W10E model example)
+
+> Disclaimer: improper handling or software errors may damage your device. You alone are
+> responsible for any damage to hardware or software.
+
+1. Disable the original software:
+   ```bash
+   adb shell
+   $ su
+   $ pm disable com.kitesystems.nix.prod & pm disable com.kitesystems.nix.frame
+   ```
+2. Enable ADB over the network so you can reach the device later without opening the frame:
+   ```bash
+   adb shell
+   $ su
+   $ setprop persist.adb.tcp.port 6666
+   ```
+3. Install the app as a system app:
+   ```bash
+   adb root && adb remount && adb push app-release.apk /system/app/immich.apk && adb reboot
+   ```
+4. Set up your credentials. You can mirror the screen with [scrcpy](https://github.com/Genymobile/scrcpy),
+   or send the host via adb (`adb shell input text https://demo.immich.app`).
+5. Open Android Settings (`adb shell am start -a android.settings.SETTINGS`) and set the display to
+   turn off after the shortest time, or use `adb shell settings put system screen_off_timeout 1`
+   for the minimum.
+
+---
+
 Immich is a self hosted backup solution for photos and videos. Current features include:
 
 - Upload and view videos and photos

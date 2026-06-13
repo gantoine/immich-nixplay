@@ -17,6 +17,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Keep the display awake while showing photos (Nixplay frame) -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <!-- Access internet-based media -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Donation -->
@@ -71,18 +74,14 @@
             android:exported="true"
             android:configChanges="keyboard|keyboardHidden|navigation">
 
-            <!-- Used as the main entry point from the leanback launcher -->
+            <!-- Used as the main entry point from the leanback launcher.
+                 HOME + DEFAULT categories let the app act as the device's home/launcher
+                 app so the Nixplay frame can boot straight into it. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
                 <category android:name="android.intent.category.LAUNCHER" />
-<!--                <category android:name="android.intent.category.HOME" />-->
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="com.google.android.gms.cast.tv.action.LAUNCH" />
-                <action android:name="com.google.android.gms.cast.tv.action.LOAD"/>
-
+                <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
@@ -97,15 +96,6 @@
 <!--                <category android:name="android.intent.category.DEFAULT" />-->
 <!--            </intent-filter>-->
 <!--        </receiver>-->
-
-        <!--
-         ~ Options provider class for Cast Connect when CastReceiverContext
-         ~ is initialised. More information can be found at -
-         ~ https://developers.google.com/cast/docs/android_tv_receiver/core_features#specify_receiver_options_provider
-        -->
-        <meta-data
-            android:name="com.google.android.gms.cast.tv.RECEIVER_OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="nl.giejay.android.tv.immich.castconnect.CastReceiverOptionsProvider" />
 
     </application>
 

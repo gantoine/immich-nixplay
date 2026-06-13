@@ -169,6 +169,8 @@
 
     <!-- Preference screens and categories -->
     <string name="view_settings">View Settings</string>
+    <string name="wake_lock">WakeLock</string>
+    <string name="wake_lock_desc">How many minutes without sensor movement before turning off the display</string>
     <string name="ordering">Ordering</string>
     <string name="slideshow">Slideshow</string>
     <string name="other">Other</string>

@@ -38,6 +38,13 @@ data object HOST_NAME : StringPref("", ImmichApplication.appContext!!.getString(
     }
 }
 
+// wakelock (Nixplay frame motion sensor): value in minutes, 0 = always on
+data object WAKE_LOCK_MINUTES : IntListPref(15,
+    ImmichApplication.appContext!!.getString(R.string.wake_lock),
+    ImmichApplication.appContext!!.getString(R.string.wake_lock_desc),
+    R.array.wake_lock_minutes_titles,
+    R.array.wake_lock_minutes_values)
+
 // screensaver
 private val SCREENSAVER_SETTINGS = "android.settings.DREAM_SETTINGS"
 
@@ -316,6 +323,10 @@ data object EXCLUDE_ASSETS_IN_ALBUM : StringSetPref(emptySet(), ImmichApplicatio
 // Building the view
 data object ViewPrefScreen : PrefScreen(ImmichApplication.appContext!!.getString(R.string.view_settings), "view",
     listOf(
+        PrefCategory(ImmichApplication.appContext!!.getString(R.string.wake_lock),
+            listOf(
+                WAKE_LOCK_MINUTES)
+        ),
         PrefCategory(ImmichApplication.appContext!!.getString(R.string.ordering),
             listOf(
                 ALBUMS_SORTING,

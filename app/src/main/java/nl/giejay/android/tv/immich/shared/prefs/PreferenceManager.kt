@@ -61,6 +61,11 @@ object PreferenceManager {
         return isValid(get(HOST_NAME), get(API_KEY))
     }
 
+    // Minutes without sensor movement before the display is turned off. 0 = always on.
+    fun wakeLockMinutes(): Int {
+        return get(WAKE_LOCK_MINUTES)
+    }
+
     fun isValid(hostName: String?, apiKey: String?): Boolean {
         return hostName?.isNotBlank() == true && apiKey?.isNotBlank() == true && HttpUrl.parse(hostName) != null
     }
