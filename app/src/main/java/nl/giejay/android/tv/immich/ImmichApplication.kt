@@ -23,7 +23,9 @@ import nl.giejay.android.tv.immich.api.util.Tls12SocketFactory
 import nl.giejay.android.tv.immich.sensors.ActivitySensor
 import nl.giejay.android.tv.immich.shared.prefs.PreferenceManager
 import nl.giejay.android.tv.immich.shared.prefs.USER_ID
+import org.conscrypt.Conscrypt
 import timber.log.Timber
+import java.security.Security
 import java.util.UUID
 
 
@@ -45,6 +47,16 @@ class ImmichApplication : Application() {
         super.onCreate()
 
         appContext = this
+        // Install Conscrypt as the top security provider so KitKat can negotiate modern TLS
+        // (AEAD ciphers / TLS 1.3) with current HTTPS servers — the platform stack cannot.
+        // This makes the existing Tls12SocketFactory path reach modern endpoints (weather, and the
+        // public Immich domain). Best-effort: fall back to the platform stack if it can't load.
+        try {
+            Security.insertProviderAt(Conscrypt.newProvider(), 1)
+            Timber.i("Conscrypt installed as security provider")
+        } catch (e: Throwable) {
+            Timber.e(e, "Could not install Conscrypt; falling back to platform TLS")
+        }
         // Enable TLS 1.2 for ExoPlayer's HttpsURLConnection-based video data source on KitKat.
         Tls12SocketFactory.installAsDefaultHttpsFactory()
         PreferenceManager.init(this)
