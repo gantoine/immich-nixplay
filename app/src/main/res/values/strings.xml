@@ -228,6 +228,12 @@
     <string name="weather_set_location">Set a location in Settings → Weather to show the forecast</string>
     <string name="weather_loading">Loading weather…</string>
     <string name="weather_today">Today</string>
+    <string name="weather_precipitation">Precip</string>
+    <string name="weather_wind">Wind</string>
+    <string name="weather_humidity">Humidity</string>
+    <string name="weather_uv">UV index</string>
+    <string name="weather_pressure">Pressure</string>
+    <string name="weather_aqi">Air (AQI)</string>
     <string name="weather_error">Could not load weather. Check the location and network.</string>
 
     <!-- Ordering -->

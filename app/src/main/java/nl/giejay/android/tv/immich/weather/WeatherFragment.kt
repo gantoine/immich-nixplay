@@ -74,9 +74,26 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
             view.findViewById<TextView>(R.id.current_hilo).text = "H ${today.high}°  L ${today.low}°"
         }
 
+        val inflater = LayoutInflater.from(requireContext())
+
+        val stats = view.findViewById<LinearLayout>(R.id.stats_row)
+        stats.removeAllViews()
+        fun addStat(value: String?, label: String) {
+            if (value == null) return
+            val item = inflater.inflate(R.layout.weather_stat_item, stats, false)
+            item.findViewById<TextView>(R.id.stat_value).text = value
+            item.findViewById<TextView>(R.id.stat_label).text = label
+            stats.addView(item)
+        }
+        addStat(weather.precipitation?.let { "$it ${weather.precipUnit}" }, getString(R.string.weather_precipitation))
+        addStat(weather.windSpeed?.let { "$it ${weather.windUnit}" }, getString(R.string.weather_wind))
+        addStat(weather.humidity?.let { "$it%" }, getString(R.string.weather_humidity))
+        addStat(weather.uvIndex?.let { "$it" }, getString(R.string.weather_uv))
+        addStat(weather.pressureHpa?.let { "$it hPa" }, getString(R.string.weather_pressure))
+        addStat(weather.aqi?.let { "$it" }, getString(R.string.weather_aqi))
+
         val row = view.findViewById<LinearLayout>(R.id.forecast_row)
         row.removeAllViews()
-        val inflater = LayoutInflater.from(requireContext())
         weather.days.forEachIndexed { index, day ->
             val item = inflater.inflate(R.layout.weather_day_item, row, false)
             item.findViewById<TextView>(R.id.day_name).text =
