@@ -17,7 +17,8 @@ import java.util.Locale
 
 fun List<Asset>.toSliderItems(keepOrder: Boolean, mergePortrait: Boolean): List<SliderItemViewHolder> {
     if (!mergePortrait) {
-        return this.map { SliderItemViewHolder(it.toSliderItem()) }
+        val items = this.map { SliderItemViewHolder(it.toSliderItem()) }
+        return if (keepOrder) items else items.shuffled()
     }
     if (!keepOrder) {
         val portraits = this.filter { it.isPortraitImage() }
