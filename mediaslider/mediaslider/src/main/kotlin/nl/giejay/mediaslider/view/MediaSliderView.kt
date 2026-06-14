@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -77,6 +78,10 @@ class MediaSliderView(context: Context) : ConstraintLayout(context) {
     private var currentPlayerView: PlayerView? = null
     private var defaultExoFactory = DefaultHttpDataSource.Factory()
     private var slideShowPlaying = false
+    // Per-session image display time; seeded from config.interval, adjustable with up/down.
+    private var currentIntervalSeconds = 3
+    // Preset steps the up/down buttons snap through (seconds).
+    private val intervalSteps = listOf(1, 2, 3, 5, 10, 15, 20, 30, 60, 120, 300)
     private val goToNextAssetRunnable = Runnable { this.goToNextAsset() }
     private var pagerAdapter: ScreenSlidePagerAdapter? = null
     private var loading = false
@@ -119,19 +124,16 @@ class MediaSliderView(context: Context) : ConstraintLayout(context) {
                     return super.dispatchKeyEvent(event)
                 }
                 return false
-            } else if (event.keyCode == KeyEvent.KEYCODE_DPAD_DOWN && itemType == SliderItemType.VIDEO && currentPlayerView != null) {
-                currentPlayerView!!.useController = true
-                currentPlayerView!!.showController()
-
-                // Ensure proper focus to fix highlighting issue on first open
-                currentPlayerView!!.post {
-                    val progressView = currentPlayerView!!.findViewById<View>(R.id.exo_progress_layout)
-                    progressView?.requestFocus()
-                    // Force a refresh of the focus state
-                    progressView?.invalidate()
+            } else if (event.keyCode == KeyEvent.KEYCODE_DPAD_UP || event.keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                val increase = event.keyCode == KeyEvent.KEYCODE_DPAD_UP
+                if (itemType == SliderItemType.VIDEO && currentPlayerView != null) {
+                    // Playing a video/music: up/down adjust the media volume.
+                    adjustVolume(increase)
+                } else {
+                    // Showing a picture: up/down adjust how long each image is displayed.
+                    adjustDisplayTime(increase)
                 }
-
-                return super.dispatchKeyEvent(event)
+                return false
             } else if (event.keyCode == KeyEvent.KEYCODE_BACK && itemType == SliderItemType.VIDEO && currentPlayerView != null && currentPlayerView!!.isControllerVisible) {
                 currentPlayerView!!.hideController()
                 return true
@@ -170,6 +172,7 @@ class MediaSliderView(context: Context) : ConstraintLayout(context) {
 
     fun loadMediaSliderView(config: MediaSliderConfiguration) {
         this.config = config
+        this.currentIntervalSeconds = config.interval
 
         val listViewRight = findViewById<ListView>(R.id.metadata_view_right)
         metaDataRightAdapter = MetaDataAdapter(context,
@@ -265,8 +268,35 @@ class MediaSliderView(context: Context) : ConstraintLayout(context) {
 
     private fun startTimerNextAsset() {
         mainHandler.removeCallbacks(goToNextAssetRunnable)
-        mainHandler.postDelayed(goToNextAssetRunnable, (config.interval * 1000).toLong())
+        mainHandler.postDelayed(goToNextAssetRunnable, (currentIntervalSeconds * 1000).toLong())
     }
+
+    private fun adjustVolume(increase: Boolean) {
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC,
+            if (increase) AudioManager.ADJUST_RAISE else AudioManager.ADJUST_LOWER,
+            AudioManager.FLAG_SHOW_UI
+        )
+    }
+
+    private fun adjustDisplayTime(increase: Boolean) {
+        currentIntervalSeconds = if (increase) {
+            intervalSteps.firstOrNull { it > currentIntervalSeconds } ?: intervalSteps.last()
+        } else {
+            intervalSteps.lastOrNull { it < currentIntervalSeconds } ?: intervalSteps.first()
+        }
+        currentToast?.cancel()
+        currentToast = Toast.makeText(context, "Display time: ${formatSeconds(currentIntervalSeconds)}", Toast.LENGTH_SHORT)
+        currentToast!!.show()
+        // Restart the running timer so the change takes effect on the current image.
+        if (slideShowPlaying && currentItemType() == SliderItemType.IMAGE) {
+            startTimerNextAsset()
+        }
+    }
+
+    private fun formatSeconds(s: Int): String =
+        if (s >= 60 && s % 60 == 0) "${s / 60}m" else "${s}s"
 
     private fun goToNextAsset() {
         if (mPager.currentItem < mPager.adapter!!.count - 1) {
