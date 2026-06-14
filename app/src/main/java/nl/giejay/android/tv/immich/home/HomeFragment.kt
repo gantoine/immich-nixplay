@@ -129,7 +129,8 @@ class HomeFragment : BrowseSupportFragment() {
     private fun setupUi() {
         headersState = HEADERS_ENABLED
         isHeadersTransitionOnBackEnabled = true
-        brandColor = resources.getColor(android.R.color.black)
+        // Translucent sidebar so the photo behind shows through (this colors the headers dock).
+        brandColor = android.graphics.Color.parseColor("#99000000")
         title = getString(R.string.albums)
 //        setOnSearchClickedListener {
 //            Toast.makeText(

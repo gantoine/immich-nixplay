@@ -106,7 +106,9 @@ class AlbumFragment : VerticalCardGridFragment<Album>() {
             a.description,
             a.id,
             ApiUtil.getThumbnailUrl(a.albumThumbnailAssetId, "thumbnail"),
-            ApiUtil.getFileUrl(a.albumThumbnailAssetId, "IMAGE"),
+            // Use the 1440px preview for the background instead of the full original — lighter on
+            // the frame's 512MB and still sharp on a 1024px panel.
+            ApiUtil.getThumbnailUrl(a.albumThumbnailAssetId, "preview"),
             if (selectionMode) PreferenceManager.get(selectionTypeKey).contains(a.id) else false
         )
     }
