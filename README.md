@@ -123,6 +123,7 @@ When setting up your API key in Immich, make sure to grant the following permiss
 - `album.download` - Download album content
 - `archive.read` - Read archived items
 - `face.read` - Read face detection data
+- `folder.read` - Read folder view (required for the "Folders" screen)
 - `library.read` - Read library information
 - `timeline.read` - Read timeline data
 - `memory.read` - Read memory/moment data
