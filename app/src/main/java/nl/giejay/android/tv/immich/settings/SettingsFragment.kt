@@ -11,7 +11,6 @@ import androidx.navigation.fragment.findNavController
 import nl.giejay.android.tv.immich.ImmichApplication
 import nl.giejay.android.tv.immich.R
 import nl.giejay.android.tv.immich.home.HomeFragmentDirections
-import nl.giejay.android.tv.immich.shared.donate.DonateService
 import nl.giejay.android.tv.immich.shared.prefs.DebugPrefScreen
 import nl.giejay.android.tv.immich.shared.prefs.ScreensaverPrefScreen
 import nl.giejay.android.tv.immich.shared.prefs.ViewPrefScreen
@@ -19,7 +18,6 @@ import nl.giejay.android.tv.immich.shared.prefs.ViewPrefScreen
 
 class SettingsFragment : RowsSupportFragment() {
     private val mRowsAdapter: ArrayObjectAdapter
-    private lateinit var donateService: DonateService
 
     init {
         val selector = ListRowPresenter()
@@ -34,7 +32,6 @@ class SettingsFragment : RowsSupportFragment() {
 
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
-        donateService = DonateService(activity)
         loadData()
     }
 

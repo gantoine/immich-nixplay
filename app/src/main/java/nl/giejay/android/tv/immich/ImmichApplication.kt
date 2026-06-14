@@ -18,6 +18,8 @@ package nl.giejay.android.tv.immich
 import android.app.Application
 import android.content.Context
 import android.os.Handler
+import androidx.multidex.MultiDex
+import nl.giejay.android.tv.immich.api.util.Tls12SocketFactory
 import nl.giejay.android.tv.immich.sensors.ActivitySensor
 import nl.giejay.android.tv.immich.shared.prefs.PreferenceManager
 import nl.giejay.android.tv.immich.shared.prefs.USER_ID
@@ -33,10 +35,18 @@ class ImmichApplication : Application() {
     private val mainHandler: Handler = Handler()
     private val sensorServiceRunnable = SensorService(mainHandler)
 
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(base)
+        // Required on API < 21 (KitKat) to load the secondary dex files.
+        MultiDex.install(this)
+    }
+
     override fun onCreate() {
         super.onCreate()
 
         appContext = this
+        // Enable TLS 1.2 for ExoPlayer's HttpsURLConnection-based video data source on KitKat.
+        Tls12SocketFactory.installAsDefaultHttpsFactory()
         PreferenceManager.init(this)
         activitySensor = ActivitySensor(this)
 

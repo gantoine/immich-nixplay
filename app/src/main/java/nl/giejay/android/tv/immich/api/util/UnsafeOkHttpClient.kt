@@ -1,6 +1,6 @@
 package nl.giejay.android.tv.immich.api.util
 
-import okhttp3.Interceptor
+import nl.giejay.android.tv.immich.api.util.Tls12SocketFactory.Companion.enableTls12
 import okhttp3.OkHttpClient
 import java.security.SecureRandom
 import java.security.cert.CertificateException
@@ -35,14 +35,15 @@ object UnsafeOkHttpClient {
                 }
             )
 
-            // Install the all-trusting trust manager
-            val sslContext: SSLContext = SSLContext.getInstance("SSL")
+            // Install the all-trusting trust manager. Use TLSv1.2 so the resulting sockets can
+            // negotiate it on KitKat (API 19), where it is otherwise off by default.
+            val sslContext: SSLContext = SSLContext.getInstance("TLSv1.2")
             sslContext.init(null, trustAllCerts, SecureRandom())
 
-            // Create an ssl socket factory with our all-trusting manager
+            // Wrap the all-trusting factory so TLS 1.2 is force-enabled on pre-Lollipop devices.
             val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
             val builder: OkHttpClient.Builder = OkHttpClient.Builder()
-            builder.sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
+                .enableTls12(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
             builder.hostnameVerifier { _, _ -> true }
             builder
         } catch (e: Exception) {

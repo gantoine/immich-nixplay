@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.service.dreams.DreamService
 import android.view.KeyEvent
 import android.widget.Toast
-import androidx.media3.datasource.DefaultHttpDataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import arrow.core.Either
 import arrow.core.getOrElse
 import nl.giejay.mediaslider.model.MetaDataType

@@ -26,8 +26,11 @@ android {
     compileSdk = 36
     defaultConfig {
         applicationId "nl.giejay.android.tv.immich"
-        minSdkVersion 24
+        minSdkVersion 19
         targetSdkVersion 36
+        // minSdk < 21 has no native multidex; required because the app exceeds the 64K
+        // method limit and core library desugaring needs multidex enabled.
+        multiDexEnabled true
         versionCode 125
         versionName "3.3"
 
@@ -90,19 +93,33 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     implementation project(path: ':mediaslider:mediaslider')
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+    // Legacy multidex support for API 19/20 (KitKat has no native multidex).
+    implementation 'androidx.multidex:multidex:2.0.1'
 
-    // AndroidX libraries
-    def leanback_version = "1.2.0"
-    def fragment_version = "1.8.8"
-    implementation "androidx.appcompat:appcompat:1.7.1"
-    implementation "androidx.core:core-ktx:1.16.0"
+    // AndroidX libraries — pinned to the last versions that still support minSdk 19 (KitKat).
+    // leanback core 1.1.0-rc01 is minSdk 17; we need 1.1.x for the *Compat preference
+    // fragments the settings UI uses. leanback-preference 1.1.0-rc01 declares minSdk 21,
+    // overridden in the manifest (it is thin fragment glue with no real 21-only API use).
+    def leanback_version = "1.1.0-rc01"
+    def fragment_version = "1.6.2"
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.fragment:fragment-ktx:$fragment_version"
     implementation "androidx.leanback:leanback:$leanback_version"
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
-//    implementation "androidx.preference:preference-ktx:1.2.0"
+    // preference 1.1.1 (minSdk 14) provides attrs like useSimpleSummaryProvider / SeekBar min
+    // that leanback-preference 1.0.0's transitive preference 1.0.0 lacks. Known-good combo.
+    implementation "androidx.preference:preference-ktx:1.1.1"
     implementation "androidx.leanback:leanback-preference:$leanback_version"
+    // Force OkHttp down to the last KitKat-compatible branch; Glide/Retrofit pull newer.
+    configurations.all {
+        resolutionStrategy {
+            force 'com.squareup.okhttp3:okhttp:3.12.13'
+            force 'com.squareup.okhttp3:logging-interceptor:3.12.13'
+        }
+    }
     implementation 'io.arrow-kt:arrow-core:1.2.0'
 
     debugImplementation "androidx.fragment:fragment-testing:$fragment_version"
@@ -117,18 +134,21 @@ dependencies {
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
     implementation group: 'io.reactivex.rxjava3', name: 'rxjava', version: '3.1.8'
 
-    // Exoplayer for playback
-    implementation 'androidx.media3:media3-exoplayer:1.7.1'
+    // Exoplayer for playback. Legacy ExoPlayer 2.x (vs androidx.media3) because the
+    // Nixplay frame runs Android 4.4 (API 19); media3 requires minSdk 21.
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.19.1'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.19.1'
 
-    implementation "com.android.billingclient:billing-ktx:8.0.0"
+    // NOTE: Play Billing (donations) and Play Services auth removed: the frame has no
+    // Google Play Services, and recent versions require minSdk 21+.
 
     implementation "com.google.code.gson:gson:2.11.0"
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.16.0'
 
-    // Google Play Services for identity
-    def playservices_version = "21.3.0"
-    implementation "com.google.android.gms:play-services-auth:$playservices_version"
+    // OkHttp 3.12.x is the last branch supporting Android < 5.0 (API 19/KitKat).
+    implementation 'com.squareup.okhttp3:okhttp:3.12.13'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.12.13'
 
     // Retrofit for HTTP requests
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
@@ -136,9 +156,6 @@ dependencies {
 
     // Logging
     implementation("com.jakewharton.timber:timber:5.0.1")
-
-    // qr
-    implementation 'com.github.alexzhirkevich:custom-qr-generator:1.6.2'
 
     kapt 'com.github.bumptech.glide:compiler:4.14.2'
 

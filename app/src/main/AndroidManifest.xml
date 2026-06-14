@@ -17,13 +17,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- leanback-preference 1.1.0-rc01 declares minSdk 21 but is only used for its Compat
+         preference fragments (no real API-21 dependency); allow it on this minSdk-19 build. -->
+    <uses-sdk tools:overrideLibrary="androidx.leanback.preference" />
+
     <!-- Keep the display awake while showing photos (Nixplay frame) -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Access internet-based media -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Donation -->
-    <uses-permission android:name="com.android.vending.BILLING" />
 
     <!-- For writing to home screen channels -->
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />

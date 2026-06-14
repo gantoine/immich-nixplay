@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.media3.datasource.DefaultHttpDataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import androidx.navigation.fragment.findNavController
 import nl.giejay.android.tv.immich.R
 import nl.giejay.mediaslider.view.MediaSliderFragment

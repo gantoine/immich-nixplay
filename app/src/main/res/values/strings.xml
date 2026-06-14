@@ -215,6 +215,7 @@
     <string name="donation_subtitle">Developing this app takes a lot of effort, if you would like to show your appreciation, you can donate using the following options.</string>
     <string name="donation_exhausted">You have exhausted your donate options, thanks!</string>
     <string name="donation_init_failed">Could not initialize donation service, sorry!</string>
+    <string name="donation_unavailable">Donations are not available on this device (no Google Play). Thanks for the thought!</string>
 
     <!-- Ordering -->
     <string name="order_alphabetically_az">Alphabetically (A-Z)</string>
