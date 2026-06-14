@@ -76,21 +76,28 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
 
         val inflater = LayoutInflater.from(requireContext())
 
-        val stats = view.findViewById<LinearLayout>(R.id.stats_row)
-        stats.removeAllViews()
-        fun addStat(value: String?, label: String) {
+        val statsLeft = view.findViewById<LinearLayout>(R.id.stats_left)
+        val statsRight = view.findViewById<LinearLayout>(R.id.stats_right)
+        statsLeft.removeAllViews()
+        statsRight.removeAllViews()
+        val statGap = (28 * resources.displayMetrics.density).toInt()
+        fun addStat(column: LinearLayout, value: String?, label: String) {
             if (value == null) return
-            val item = inflater.inflate(R.layout.weather_stat_item, stats, false)
+            val item = inflater.inflate(R.layout.weather_stat, column, false)
             item.findViewById<TextView>(R.id.stat_value).text = value
             item.findViewById<TextView>(R.id.stat_label).text = label
-            stats.addView(item)
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            if (column.childCount > 0) lp.topMargin = statGap
+            item.layoutParams = lp
+            column.addView(item)
         }
-        addStat(weather.precipitation?.let { "$it ${weather.precipUnit}" }, getString(R.string.weather_precipitation))
-        addStat(weather.windSpeed?.let { "$it ${weather.windUnit}" }, getString(R.string.weather_wind))
-        addStat(weather.humidity?.let { "$it%" }, getString(R.string.weather_humidity))
-        addStat(weather.uvIndex?.let { "$it" }, getString(R.string.weather_uv))
-        addStat(weather.pressureHpa?.let { "$it hPa" }, getString(R.string.weather_pressure))
-        addStat(weather.aqi?.let { "$it" }, getString(R.string.weather_aqi))
+        addStat(statsLeft, weather.precipitation?.let { "$it ${weather.precipUnit}" }, getString(R.string.weather_precipitation))
+        addStat(statsLeft, weather.humidity?.let { "$it%" }, getString(R.string.weather_humidity))
+        addStat(statsRight, weather.uvIndex?.let { "$it" }, getString(R.string.weather_uv))
+        addStat(statsRight, weather.aqi?.let { "$it" }, getString(R.string.weather_aqi))
 
         val row = view.findViewById<LinearLayout>(R.id.forecast_row)
         row.removeAllViews()

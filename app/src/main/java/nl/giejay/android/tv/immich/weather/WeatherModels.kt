@@ -14,15 +14,26 @@ data class GeoResult(
 )
 
 /** Open-Meteo forecast response. */
-data class ForecastResponse(val current: CurrentWeather?, val daily: DailyWeather?)
+data class ForecastResponse(
+    val current: CurrentWeather?,
+    val hourly: HourlyWeather? = null,
+    val daily: DailyWeather?
+)
 
 data class CurrentWeather(
+    val time: String? = null,
     @SerializedName("temperature_2m") val temperature: Double,
     @SerializedName("weather_code") val weatherCode: Int,
     @SerializedName("relative_humidity_2m") val humidity: Int? = null,
     @SerializedName("precipitation") val precipitation: Double? = null,
     @SerializedName("wind_speed_10m") val windSpeed: Double? = null,
     @SerializedName("surface_pressure") val pressure: Double? = null
+)
+
+data class HourlyWeather(
+    val time: List<String>? = null,
+    @SerializedName("precipitation") val precipitation: List<Double?>? = null,
+    @SerializedName("precipitation_probability") val precipitationProbability: List<Int?>? = null
 )
 
 data class DailyWeather(

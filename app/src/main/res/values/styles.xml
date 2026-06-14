@@ -332,4 +332,17 @@
     <style name="ProgressBar" parent="AppTheme">
         <item name="colorAccent">@color/progressbarColor</item>
     </style>
+
+    <!-- White text with a strong shadow so it stays readable directly over a photo. -->
+    <style name="WeatherText">
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:shadowColor">#E6000000</item>
+        <item name="android:shadowRadius">14</item>
+        <item name="android:shadowDx">0</item>
+        <item name="android:shadowDy">3</item>
+    </style>
+
+    <style name="WeatherTextSecondary" parent="WeatherText">
+        <item name="android:textColor">#E6FFFFFF</item>
+    </style>
 </resources>

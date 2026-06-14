@@ -2,17 +2,18 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_weather_scrim"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:padding="48dp">
+    android:padding="40dp">
 
     <TextView
         android:id="@+id/weather_status"
+        style="@style/WeatherText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:textColor="@color/default_text_color_secondary"
-        android:textSize="22sp" />
+        android:textSize="28sp" />
 
     <LinearLayout
         android:id="@+id/weather_content"
@@ -23,66 +24,77 @@
 
         <TextView
             android:id="@+id/weather_location"
+            style="@style/WeatherText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/default_text_color"
-            android:textSize="30sp" />
+            android:textSize="40sp" />
 
+        <!-- Hero: stats | big icon + huge temp | stats -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="center_vertical"
+            android:gravity="center"
             android:orientation="horizontal">
+
+            <!-- Left-side stats (precipitation, humidity) -->
+            <LinearLayout
+                android:id="@+id/stats_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="36dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical" />
 
             <ImageView
                 android:id="@+id/current_icon"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
                 android:contentDescription="@string/weather" />
-
-            <TextView
-                android:id="@+id/current_temp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:textColor="@color/default_text_color"
-                android:textSize="84sp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
+                android:layout_marginStart="20dp"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/current_condition"
+                    android:id="@+id/current_temp"
+                    style="@style/WeatherText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/default_text_color"
-                    android:textSize="28sp" />
+                    android:textSize="104sp" />
+
+                <TextView
+                    android:id="@+id/current_condition"
+                    style="@style/WeatherText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="36sp" />
 
                 <TextView
                     android:id="@+id/current_hilo"
+                    style="@style/WeatherTextSecondary"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/default_text_color_secondary"
-                    android:textSize="22sp" />
+                    android:textSize="28sp" />
             </LinearLayout>
+
+            <!-- Right-side stats (UV, AQI) -->
+            <LinearLayout
+                android:id="@+id/stats_right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="40dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/stats_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal" />
-
+        <!-- Forecast -->
         <LinearLayout
             android:id="@+id/forecast_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
             android:orientation="horizontal" />
     </LinearLayout>
 </FrameLayout>

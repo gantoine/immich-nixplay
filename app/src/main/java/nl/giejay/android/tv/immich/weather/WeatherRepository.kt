@@ -64,6 +64,19 @@ object WeatherRepository {
                     low = daily.tempMin.getOrElse(i) { 0.0 }.roundToInt()
                 )
             }
+            // current.precipitation is only the preceding 15-minute bucket (reads 0 mid-rain); use the
+            // current hour's value from the hourly series instead, falling back to current if unavailable.
+            val precipitation = run {
+                val hourly = resp.hourly
+                val hour = current.time?.take(13)
+                if (hour != null && hourly?.time != null) {
+                    val idx = hourly.time.indexOfFirst { it.take(13) == hour }
+                    hourly.precipitation?.getOrNull(idx)
+                } else {
+                    null
+                }
+            } ?: current.precipitation
+
             // Air quality is a separate endpoint and not available everywhere — best effort.
             val aqi = try {
                 airQualityService.airQuality(geo.latitude, geo.longitude).current?.usAqi
@@ -79,7 +92,7 @@ object WeatherRepository {
                 unitSymbol = if (useFahrenheit) "°F" else "°C",
                 days = days,
                 humidity = current.humidity,
-                precipitation = current.precipitation,
+                precipitation = precipitation,
                 precipUnit = precipUnit,
                 windSpeed = current.windSpeed?.roundToInt(),
                 windUnit = windUnit,
