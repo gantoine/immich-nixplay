@@ -9,7 +9,8 @@ import nl.giejay.mediaslider.config.MediaSliderConfiguration
 enum class GlideTransformations(val transform: (Context, MediaSliderConfiguration, (String) -> Unit) -> BitmapTransformation) {
     CENTER_CROP({ _, _, _ -> CenterCrop() }),
     CENTER_INSIDE({ _, _, _ -> CenterInside() }),
-    SAFE_CENTER_CROP({ context, config, position -> SafeCenterCrop(context, config.maxCutOffHeight, config.maxCutOffWidth, position) });
+    SAFE_CENTER_CROP({ context, config, position -> SafeCenterCrop(context, config.maxCutOffHeight, config.maxCutOffWidth, position) }),
+    ORIENTATION_AWARE_CROP({ context, _, position -> OrientationAwareCenterCrop(context, position) });
 
     companion object {
         fun valueOfSafe(name: String, default: GlideTransformations): GlideTransformations {
