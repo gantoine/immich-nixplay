@@ -1,8 +1,9 @@
-# Immich Android TV — Nixplay frame / Android 4.4 fork
+# immich-nixplay
 
-A fork of [Immich Android TV](https://github.com/giejay/Immich-Android-TV) that runs on
+[Immich](https://github.com/immich-app/immich) Android TV for
 [Nixplay](https://www.nixplay.com/) digital photo frames, **including older models still on
-Android 4.4 (KitKat / API 19)**. It builds on the standard app plus the frame work from
+Android 4.4 (KitKat / API 19)**. A fork of
+[Immich Android TV](https://github.com/giejay/Immich-Android-TV) plus the frame work from
 [smerschjohann/Immix](https://github.com/smerschjohann/Immix).
 
 If you have a newer frame or any Android TV device on **API 21+**, the upstream app works as-is and
@@ -170,24 +171,26 @@ hostname, or front Immich with a LAN-only reverse proxy that offers a KitKat-com
 
 Create an API key in Immich (Account Settings → API Keys) with these permissions:
 
-- `album.read` – album information
-- `album.download` – album content
-- `activity.read` – activity data
-- `asset.read` – asset metadata
-- `asset.view` – view assets (photos/videos)
-- `asset.download` – download assets for viewing
-- `archive.read` – archived items
-- `face.read` – face detection data
-- `folder.read` – folder view (the **Folders** screen 403s without this)
-- `library.read` – library information
-- `timeline.read` – timeline data
-- `memory.read` – memory/moment data
-- `partner.read` – partner sharing data
-- `person.read` – people data
-- `session.read` – session information
-- `tag.read` / `tag.asset` – tag information and asset associations
+- `album.read`
+- `album.download`
+- `activity.read`
+- `asset.read`
+- `asset.view`
+- `asset.download`
+- `archive.read`
+- `face.read`
+- `folder.read`
+- `library.read`
+- `timeline.read`
+- `memory.read`
+- `partner.read`
+- `person.read`
+- `session.read`
+- `tag.read`
+- `tag.asset`
 
-You can edit an existing key to add a missing permission (e.g. `folder.read`) without recreating it.
+You can edit an existing key to add a missing permission without recreating it. Note that
+`asset.view` is what serves thumbnails/images and `folder.read` is required for the Folders screen.
 
 ## Known limitations on Android 4.4 frames
 
