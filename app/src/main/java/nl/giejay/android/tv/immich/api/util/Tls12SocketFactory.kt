@@ -45,6 +45,10 @@ class Tls12SocketFactory(private val delegate: SSLSocketFactory) : SSLSocketFact
     private fun patch(socket: Socket): Socket {
         if (socket is SSLSocket) {
             socket.enabledProtocols = arrayOf("TLSv1", "TLSv1.1", "TLSv1.2")
+            // KitKat (API 19) ships strong cipher suites as supported-but-disabled. Enable every
+            // suite the device supports so we can find common ground with a modern server, which
+            // typically won't accept the weak CBC/RC4 suites enabled by default on KitKat.
+            socket.enabledCipherSuites = socket.supportedCipherSuites
         }
         return socket
     }
@@ -79,8 +83,12 @@ class Tls12SocketFactory(private val delegate: SSLSocketFactory) : SSLSocketFact
                 }.socketFactory
                 sslSocketFactory(Tls12SocketFactory(factory), tm)
 
-                val tls12 = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+                // Don't restrict to MODERN_TLS's curated cipher list — on KitKat that can exclude
+                // the only suite the device and server share. Defer to whatever the socket enables
+                // (all supported suites, set above), across TLS 1.0–1.2.
+                val tls12 = ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
                     .tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_1, TlsVersion.TLS_1_0)
+                    .allEnabledCipherSuites()
                     .build()
                 connectionSpecs(listOf(tls12, ConnectionSpec.CLEARTEXT))
             } catch (e: Exception) {

@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsListView
 import android.widget.BaseAdapter
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -144,7 +145,9 @@ class MetaDataAdapter(val context: Context,
         val value = stateForItem[key]
         if(value.isNullOrBlank()) {
             return View(context).apply {
-                layoutParams = RelativeLayout.LayoutParams(0, 0)
+                // Must be AbsListView.LayoutParams: KitKat's ListView.measureScrapChild hard-casts
+                // item LayoutParams and crashes on RelativeLayout.LayoutParams.
+                layoutParams = AbsListView.LayoutParams(0, 0)
             }
         }
         val item = getItem(p0) as MetaDataItem
@@ -155,7 +158,9 @@ class MetaDataAdapter(val context: Context,
             val params = textView.layoutParams as RelativeLayout.LayoutParams
             textView.gravity = Gravity.RIGHT
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
-            view.layoutParams = params
+            // Apply to the textView (its parent is the RelativeLayout item), not the item root —
+            // setting RelativeLayout.LayoutParams on the root crashes KitKat's ListView measure.
+            textView.layoutParams = params
         }
         textView.textSize = item.fontSize.toFloat()
         textView.setPadding(textView.paddingLeft, item.padding, textView.paddingRight, item.padding)
