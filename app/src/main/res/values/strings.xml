@@ -225,6 +225,8 @@
     <string name="weather_location_desc">City or place to show the weather for, e.g. Ottawa</string>
     <string name="weather_use_fahrenheit">Use Fahrenheit</string>
     <string name="weather_use_fahrenheit_desc">Show temperatures in °F instead of °C</string>
+    <string name="weather_animated_background">Animated background</string>
+    <string name="weather_animated_background_desc">Animate the weather page with rain, snow, fog and sun effects</string>
     <string name="weather_set_location">Set a location in Settings → Weather to show the forecast</string>
     <string name="weather_loading">Loading weather…</string>
     <string name="weather_today">Today</string>

@@ -4,8 +4,13 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_weather_scrim"
     android:focusable="true"
-    android:focusableInTouchMode="true"
-    android:padding="40dp">
+    android:focusableInTouchMode="true">
+
+    <!-- Full-bleed animated weather effects, behind the scrim-tinted content. -->
+    <nl.giejay.android.tv.immich.weather.WeatherAnimationView
+        android:id="@+id/weather_animation"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <TextView
         android:id="@+id/weather_status"
@@ -20,6 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:padding="40dp"
         android:visibility="gone">
 
         <TextView
@@ -42,7 +48,7 @@
                 android:id="@+id/stats_left"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="36dp"
+                android:layout_marginEnd="64dp"
                 android:gravity="center_horizontal"
                 android:orientation="vertical" />
 
@@ -70,6 +76,7 @@
                     style="@style/WeatherText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:textSize="36sp" />
 
                 <TextView
@@ -77,6 +84,7 @@
                     style="@style/WeatherTextSecondary"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
                     android:textSize="28sp" />
             </LinearLayout>
 
@@ -85,7 +93,7 @@
                 android:id="@+id/stats_right"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="40dp"
+                android:layout_marginStart="64dp"
                 android:gravity="center_horizontal"
                 android:orientation="vertical" />
         </LinearLayout>

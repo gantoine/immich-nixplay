@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import nl.giejay.android.tv.immich.R
 import nl.giejay.android.tv.immich.shared.prefs.PreferenceManager
+import nl.giejay.android.tv.immich.shared.prefs.WEATHER_ANIMATED_BACKGROUND
 import nl.giejay.android.tv.immich.shared.prefs.WEATHER_LOCATION
 import nl.giejay.android.tv.immich.shared.prefs.WEATHER_USE_FAHRENHEIT
 import java.text.SimpleDateFormat
@@ -65,6 +66,12 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
     }
 
     private fun bind(view: View, weather: Weather) {
+        val animation = view.findViewById<WeatherAnimationView>(R.id.weather_animation)
+        animation.setScene(
+            if (PreferenceManager.get(WEATHER_ANIMATED_BACKGROUND)) WeatherCode.scene(weather.currentCode)
+            else WeatherAnimationView.Scene.NONE
+        )
+
         view.findViewById<TextView>(R.id.weather_location).text = weather.locationName
         view.findViewById<TextView>(R.id.current_temp).text = "${weather.currentTemp}${weather.unitSymbol}"
         view.findViewById<TextView>(R.id.current_condition).text = WeatherCode.description(weather.currentCode)
@@ -80,7 +87,7 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
         val statsRight = view.findViewById<LinearLayout>(R.id.stats_right)
         statsLeft.removeAllViews()
         statsRight.removeAllViews()
-        val statGap = (28 * resources.displayMetrics.density).toInt()
+        val statGap = (40 * resources.displayMetrics.density).toInt()
         fun addStat(column: LinearLayout, value: String?, label: String) {
             if (value == null) return
             val item = inflater.inflate(R.layout.weather_stat, column, false)

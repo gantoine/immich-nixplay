@@ -296,6 +296,9 @@ data object WEATHER_LOCATION : StringPref("", ImmichApplication.appContext!!.get
 data object WEATHER_USE_FAHRENHEIT : BooleanPref(false, ImmichApplication.appContext!!.getString(R.string.weather_use_fahrenheit), ImmichApplication.appContext!!.getString(R.string.weather_use_fahrenheit_desc)) {
     override fun key() = "weatherUseFahrenheit"
 }
+data object WEATHER_ANIMATED_BACKGROUND : BooleanPref(true, ImmichApplication.appContext!!.getString(R.string.weather_animated_background), ImmichApplication.appContext!!.getString(R.string.weather_animated_background_desc)) {
+    override fun key() = "weatherAnimatedBackground"
+}
 
 // internal: id of the album the user last opened (used to seed the home background on launch)
 data object LAST_SELECTED_ALBUM : StringPref("", "", "") {
@@ -388,7 +391,7 @@ data object DebugPrefScreen : PrefScreen(ImmichApplication.appContext!!.getStrin
 })
 
 data object WeatherPrefScreen : PrefScreen(ImmichApplication.appContext!!.getString(R.string.weather), "weather",
-    listOf(PrefCategory("", listOf(WEATHER_LOCATION, WEATHER_USE_FAHRENHEIT))))
+    listOf(PrefCategory("", listOf(WEATHER_LOCATION, WEATHER_USE_FAHRENHEIT, WEATHER_ANIMATED_BACKGROUND))))
 
 data class AlbumDetailsSettingsScreen(val albumId: String, val albumName: String) : PrefScreen(ImmichApplication.appContext!!.getString(R.string.settings_for, albumName),
     "album_settings_${albumId}",
