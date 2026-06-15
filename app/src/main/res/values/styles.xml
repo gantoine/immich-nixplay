@@ -204,6 +204,17 @@
         <item name="cardBackground">@null</item>
     </style>
 
+    <!-- Image-only card (no info bar) for photo/video previews. -->
+    <style name="ImageOnlyCardStyle" parent="Widget.Leanback.ImageCardViewStyle">
+        <item name="cardType">mainOnly</item>
+        <item name="cardBackground">@null</item>
+    </style>
+
+    <style name="ImageOnlyCardTheme" parent="Theme.Leanback">
+        <item name="imageCardViewStyle">@style/ImageOnlyCardStyle</item>
+        <item name="imageCardViewImageStyle">@style/DefaultCardImageStyle</item>
+    </style>
+
     <style name="DefaultCardTheme" parent="Theme.Leanback">
         <item name="imageCardViewStyle">@style/DefaultCardStyle</item>
         <item name="imageCardViewImageStyle">@style/DefaultCardImageStyle</item>

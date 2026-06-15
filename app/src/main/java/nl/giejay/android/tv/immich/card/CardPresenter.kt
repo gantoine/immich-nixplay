@@ -41,10 +41,10 @@ open class CardPresenter(context: Context, style: Int = R.style.DefaultCardTheme
     open fun loadImage(card: ICard, cardView: ImageCardView) {
         card.thumbnailUrl?.let {
             if(it.startsWith("http")){
-                Glide.with(context)
-                    .asBitmap()
-                    .centerInside()
-                    .load(it)
+                val request = Glide.with(context).asBitmap().load(it)
+                // Image-only cards (photos) fill the slot edge-to-edge; labelled cards keep the
+                // whole thumbnail visible (letterboxed) so nothing important is cropped.
+                (if (card.imageOnly) request.centerCrop() else request.centerInside())
                     .into(cardView.mainImageView!!)
             } else {
                 cardView.mainImageView!!.scaleType = ImageView.ScaleType.CENTER_INSIDE

@@ -129,9 +129,12 @@ fun List<Asset>.toCards(): List<Card> {
 }
 
 fun Asset.toCard(): Card {
-    return Card(this.deviceAssetId ?: "",
+    // Photo/video previews render image-only (no info bar) via the mainOnly card type. Album/folder/
+    // people cards keep their labels.
+    return Card("",
         this.exifInfo?.description ?: "",
         this.id,
         ApiUtil.getThumbnailUrl(this.id, "thumbnail"),
-        ApiUtil.getThumbnailUrl(this.id, "preview"))
+        ApiUtil.getThumbnailUrl(this.id, "preview"),
+        imageOnly = true)
 }
