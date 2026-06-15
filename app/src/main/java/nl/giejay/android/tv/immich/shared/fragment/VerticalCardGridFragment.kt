@@ -18,6 +18,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import arrow.core.Either
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +38,7 @@ import nl.giejay.android.tv.immich.shared.prefs.DISABLE_SSL_VERIFICATION
 import nl.giejay.android.tv.immich.shared.prefs.HOST_NAME
 import nl.giejay.android.tv.immich.shared.prefs.LOAD_BACKGROUND_IMAGE
 import nl.giejay.android.tv.immich.shared.prefs.PreferenceManager
+import nl.giejay.android.tv.immich.shared.util.BlurBackgroundTransformation
 import nl.giejay.android.tv.immich.shared.util.Debouncer
 import nl.giejay.android.tv.immich.shared.viewmodel.KeyEventsViewModel
 import timber.log.Timber
@@ -62,6 +64,9 @@ abstract class VerticalCardGridFragment<ITEM> : GridFragment() {
     // When set (via setBackgroundImage), the first/index-0 selection keeps showing this background
     // instead of the first card's own — used to seed the home background from the last opened album.
     private var initialBackgroundOverride: String? = null
+    // When true, don't show the first card's background on load — a seeded background is being fetched
+    // and would otherwise flash the first album's cover before the seed arrives.
+    protected var suppressInitialBackground = false
     protected val selectionMode: Boolean
         get() = arguments?.getBoolean("selectionMode", false) ?: false
     private var currentSelectedIndex: Int = 0
@@ -275,7 +280,13 @@ abstract class VerticalCardGridFragment<ITEM> : GridFragment() {
         withContext(Dispatchers.Main) {
             progressBar?.visibility = View.GONE
             setTitle(assets)
-            assets.firstOrNull()?.let { loadBackground(initialBackgroundOverride ?: getBackgroundPicture(it)) {} }
+            assets.firstOrNull()?.let {
+                when {
+                    initialBackgroundOverride != null -> loadBackground(initialBackgroundOverride) {}
+                    !suppressInitialBackground -> loadBackground(getBackgroundPicture(it)) {}
+                    // else: a seeded background is in flight — leave the scrim until it arrives
+                }
+            }
             setDataOnMain(assets)
         }
 
@@ -325,7 +336,8 @@ abstract class VerticalCardGridFragment<ITEM> : GridFragment() {
         try {
             Glide.with(requireActivity())
                 .load(backgroundUrl)
-                .centerCrop()
+                // Blur the browse background so it sits quietly behind the thumbnails.
+                .transform(CenterCrop(), BlurBackgroundTransformation())
                 .into(object : SimpleTarget<Drawable?>(width, height) {
                     override fun onResourceReady(
                         resource: Drawable,

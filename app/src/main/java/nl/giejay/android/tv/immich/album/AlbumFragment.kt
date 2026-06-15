@@ -58,14 +58,20 @@ class AlbumFragment : VerticalCardGridFragment<Album>() {
         if (lastAlbumId.isBlank()) {
             return
         }
+        // Suppress the first album's cover from flashing while we fetch the random photo over the network.
+        suppressInitialBackground = true
         ioScope.launch {
-            apiClient.listAssetsFromAlbum(lastAlbumId).map { details ->
-                details.assets.filter { it.type == "IMAGE" }.randomOrNull()?.let { asset ->
-                    withContext(Dispatchers.Main) {
-                        if (isAdded) {
-                            setBackgroundImage(ApiUtil.getThumbnailUrl(asset.id, "preview"))
-                        }
-                    }
+            val pickedUrl = apiClient.listAssetsFromAlbum(lastAlbumId).getOrNull()
+                ?.assets?.filter { it.type == "IMAGE" }?.randomOrNull()
+                ?.let { ApiUtil.getThumbnailUrl(it.id, "preview") }
+            withContext(Dispatchers.Main) {
+                if (!isAdded) return@withContext
+                if (pickedUrl != null) {
+                    setBackgroundImage(pickedUrl)
+                } else {
+                    // Couldn't get a photo from the last album — restore the default first-card background.
+                    suppressInitialBackground = false
+                    assets.firstOrNull()?.let { setBackgroundImage(getBackgroundPicture(it)) }
                 }
             }
         }
