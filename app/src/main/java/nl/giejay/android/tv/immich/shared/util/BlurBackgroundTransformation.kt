@@ -12,8 +12,8 @@ import java.security.MessageDigest
  * RenderScript, and it only runs once per background change (debounced), not per frame.
  */
 class BlurBackgroundTransformation(
-    private val radius: Int = 8,
-    private val downscale: Int = 6
+    private val radius: Int = 4,
+    private val downscale: Int = 3
 ) : BitmapTransformation() {
 
     override fun transform(pool: BitmapPool, toTransform: Bitmap, outWidth: Int, outHeight: Int): Bitmap {

@@ -204,15 +204,20 @@
         <item name="cardBackground">@null</item>
     </style>
 
-    <!-- Image-only card (no info bar) for photo/video previews. -->
+    <!-- Image-only card (no info bar) for photo/video previews, taller than album cards. -->
     <style name="ImageOnlyCardStyle" parent="Widget.Leanback.ImageCardViewStyle">
         <item name="cardType">mainOnly</item>
         <item name="cardBackground">@null</item>
     </style>
 
+    <style name="ImageOnlyCardImageStyle" parent="Widget.Leanback.ImageCardView.ImageStyle">
+        <item name="android:layout_width">@dimen/default_image_card_width</item>
+        <item name="android:layout_height">@dimen/photo_card_height</item>
+    </style>
+
     <style name="ImageOnlyCardTheme" parent="Theme.Leanback">
         <item name="imageCardViewStyle">@style/ImageOnlyCardStyle</item>
-        <item name="imageCardViewImageStyle">@style/DefaultCardImageStyle</item>
+        <item name="imageCardViewImageStyle">@style/ImageOnlyCardImageStyle</item>
     </style>
 
     <style name="DefaultCardTheme" parent="Theme.Leanback">

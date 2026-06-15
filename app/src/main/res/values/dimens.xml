@@ -48,6 +48,8 @@
 
     <dimen name="default_image_card_width">206dp</dimen>
     <dimen name="default_image_card_height">116dp</dimen>
+    <!-- Taller cards for photo/video previews (albums keep default_image_card_height). -->
+    <dimen name="photo_card_height">164dp</dimen>
 
     <dimen name="movie_image_card_width">120dp</dimen>
     <dimen name="movie_image_card_height">172dp</dimen>
