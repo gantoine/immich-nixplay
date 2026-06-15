@@ -220,9 +220,19 @@
         <item name="imageCardViewImageStyle">@style/ImageOnlyCardImageStyle</item>
     </style>
 
+    <!-- Album/folder card label bar: black translucent (still readable) and shorter than the
+         leanback default gray bar. -->
+    <style name="DefaultCardInfoAreaStyle" parent="Widget.Leanback.ImageCardView.InfoAreaStyle">
+        <item name="android:background">#B3000000</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+    </style>
+
     <style name="DefaultCardTheme" parent="Theme.Leanback">
         <item name="imageCardViewStyle">@style/DefaultCardStyle</item>
         <item name="imageCardViewImageStyle">@style/DefaultCardImageStyle</item>
+        <item name="imageCardViewInfoAreaStyle">@style/DefaultCardInfoAreaStyle</item>
     </style>
 
     <!-- Squared single line card with colored footer style. Used in cards example. -->
