@@ -87,7 +87,7 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
         val statsRight = view.findViewById<LinearLayout>(R.id.stats_right)
         statsLeft.removeAllViews()
         statsRight.removeAllViews()
-        val statGap = (40 * resources.displayMetrics.density).toInt()
+        val statGap = (72 * resources.displayMetrics.density).toInt()
         fun addStat(column: LinearLayout, value: String?, label: String) {
             if (value == null) return
             val item = inflater.inflate(R.layout.weather_stat, column, false)
