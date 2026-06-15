@@ -11,7 +11,6 @@ import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.View
 import java.util.Random
-import kotlin.math.cos
 import kotlin.math.sin
 
 /**
@@ -50,11 +49,10 @@ class WeatherAnimationView @JvmOverloads constructor(
     private val flakes = ArrayList<Flake>()
     private val fogBands = ArrayList<Band>()
     private val clouds = ArrayList<Band>()
-    private var sunShader: RadialGradient? = null
+    private var glowShader: RadialGradient? = null
     private val cloudPath = Path()
     private val locOnScreen = IntArray(2)
-    private var sunPhase = 0f
-    private var rayAngle = 0f
+    private var glowPhase = 0f
     private var flash = 0f
     private var thunderCooldown = 0f
 
@@ -74,7 +72,7 @@ class WeatherAnimationView @JvmOverloads constructor(
     }
 
     private fun build() {
-        drops.clear(); flakes.clear(); fogBands.clear(); clouds.clear(); sunShader = null
+        drops.clear(); flakes.clear(); fogBands.clear(); clouds.clear(); glowShader = null
         val w = width.toFloat()
         val h = height.toFloat()
         if (w <= 0f || h <= 0f) return
@@ -105,19 +103,41 @@ class WeatherAnimationView @JvmOverloads constructor(
                     60 + rnd.nextInt(45)
                 ))
             }
-            Scene.CLEAR -> {
-                val cx = w * 0.82f
-                val cy = h * 0.24f
-                sunShader = RadialGradient(
-                    cx, cy, h * 0.55f,
-                    intArrayOf(0xCCFFE9A8.toInt(), 0x55FFD060, 0x00000000),
-                    floatArrayOf(0f, 0.4f, 1f),
-                    Shader.TileMode.CLAMP
-                )
-            }
-            Scene.NONE -> {}
+            Scene.CLEAR, Scene.NONE -> {}
+        }
+        buildGlow(h)
+    }
+
+    /**
+     * Soft weather-tinted ambient glow drawn under the particles. Clear gets warm light from the
+     * screen's top-right corner; overcast/precipitation get a dimmer, cooler diffuse light from the
+     * top, scaled down for darker conditions. Anchored to the screen (the view is shifted behind the
+     * sidebar) so it sits where the light should be.
+     */
+    private fun buildGlow(h: Float) {
+        getLocationOnScreen(locOnScreen)
+        val screenW = resources.displayMetrics.widthPixels
+        val rightInView = screenW - locOnScreen[0]
+        val centerInView = screenW / 2f - locOnScreen[0]
+        glowShader = when (scene) {
+            Scene.CLEAR -> RadialGradient(
+                rightInView - h * 0.08f, h * 0.08f, h * 0.9f,
+                intArrayOf(0x66FFF0E2, 0x24FFE6CE, 0x00000000),
+                floatArrayOf(0f, 0.4f, 1f), Shader.TileMode.CLAMP)
+            Scene.CLOUDS -> skyGlow(centerInView, h, 0x40EAF1F7, 0x1AEAF1F7)
+            Scene.SNOW -> skyGlow(centerInView, h, 0x44E8F0F8, 0x1CE8F0F8)
+            Scene.FOG -> skyGlow(centerInView, h, 0x33E6E9ED, 0x16E6E9ED)
+            Scene.RAIN -> skyGlow(centerInView, h, 0x2EDCE6F0, 0x12DCE6F0)
+            Scene.THUNDER -> skyGlow(centerInView, h, 0x22C8D2E0, 0x0EC8D2E0)
+            Scene.NONE -> null
         }
     }
+
+    /** Broad, soft diffuse light from above (for non-clear skies). */
+    private fun skyGlow(cx: Float, h: Float, center: Int, mid: Int) = RadialGradient(
+        cx, -h * 0.08f, h * 1.1f,
+        intArrayOf(center, mid, 0x00000000),
+        floatArrayOf(0f, 0.45f, 1f), Shader.TileMode.CLAMP)
 
     private fun newDrop(w: Float, h: Float, d: Float) = Drop(
         rnd.nextFloat() * w * 1.2f - w * 0.1f,
@@ -177,14 +197,14 @@ class WeatherAnimationView @JvmOverloads constructor(
         lastFrameMs = now
         val w = width.toFloat()
         val h = height.toFloat()
+        drawGlow(canvas, dt, w, h)
         when (scene) {
             Scene.RAIN -> drawRain(canvas, dt, w, h)
             Scene.THUNDER -> { drawRain(canvas, dt, w, h); drawThunder(canvas, dt, w, h) }
             Scene.SNOW -> drawSnow(canvas, dt, w, h)
             Scene.FOG -> drawBands(canvas, dt, w, fogBands, true)
             Scene.CLOUDS -> drawClouds(canvas, dt, w)
-            Scene.CLEAR -> drawSun(canvas, dt, w, h)
-            Scene.NONE -> {}
+            Scene.CLEAR, Scene.NONE -> {}
         }
     }
 
@@ -251,42 +271,17 @@ class WeatherAnimationView @JvmOverloads constructor(
         }
     }
 
-    private fun drawSun(canvas: Canvas, dt: Float, w: Float, h: Float) {
-        sunPhase += dt
-        rayAngle += dt * 8f
-        val core = h * 0.072f
-        val reach = core * 2.25f
-        // The view spans the full screen but is shifted right behind the sidebar, so part of it sits
-        // off the right edge. Anchor the sun to the *screen's* top-right corner (equal margins), not
-        // the view's, so it stays fully visible.
-        val margin = h * 0.10f
-        getLocationOnScreen(locOnScreen)
-        val screenRightInView = resources.displayMetrics.widthPixels - locOnScreen[0]
-        val cx = screenRightInView - margin - reach
-        val cy = margin + reach
-        val pulse = 0.96f + 0.04f * sin(sunPhase)
-
-        // Flat golden rays (short spikes), slowly rotating.
-        paint.style = Paint.Style.STROKE
-        paint.strokeCap = Paint.Cap.ROUND
-        paint.strokeWidth = 7f * density
-        paint.color = 0xFFFFC83D.toInt()
-        paint.alpha = 210
-        val rInner = core * 1.3f
-        val rOuter = reach * pulse
-        val n = 12
-        for (i in 0 until n) {
-            val a = Math.toRadians(rayAngle + i * (360.0 / n))
-            val ca = cos(a).toFloat()
-            val sa = sin(a).toFloat()
-            canvas.drawLine(cx + rInner * ca, cy + rInner * sa, cx + rOuter * ca, cy + rOuter * sa, paint)
+    private fun drawGlow(canvas: Canvas, dt: Float, w: Float, h: Float) {
+        // Soft, slowly-breathing ambient light wash (under the particles).
+        glowPhase += dt
+        val pulse = 0.9f + 0.1f * sin(glowPhase * 0.6f)
+        glowShader?.let {
+            paint.style = Paint.Style.FILL
+            paint.shader = it
+            paint.alpha = (255 * pulse).toInt().coerceIn(0, 255)
+            canvas.drawRect(0f, 0f, w, h, paint)
+            paint.shader = null
         }
-        paint.strokeCap = Paint.Cap.BUTT
-
-        // Flat golden sun disk.
-        paint.style = Paint.Style.FILL
-        paint.color = 0xFFFFC83D.toInt()
-        canvas.drawCircle(cx, cy, core, paint)
     }
 
     /** Drifting fluffy clouds — each a union of overlapping circles drawn as one Path (uniform alpha). */
