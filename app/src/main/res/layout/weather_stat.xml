@@ -1,17 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="0dp"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_weight="1"
     android:gravity="center"
     android:orientation="vertical">
+
+    <!-- Colored severity level (e.g. UV "HIGH", AQI "GOOD"); shown only when set, above the value. -->
+    <TextView
+        android:id="@+id/stat_level"
+        style="@style/WeatherText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:textAllCaps="true"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/stat_value"
         style="@style/WeatherText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="34sp"
+        android:textSize="44sp"
         android:textStyle="bold" />
 
     <TextView
@@ -19,5 +30,6 @@
         style="@style/WeatherTextSecondary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="18sp" />
+        android:layout_marginTop="2dp"
+        android:textSize="22sp" />
 </LinearLayout>

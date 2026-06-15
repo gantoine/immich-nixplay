@@ -1,5 +1,6 @@
 package nl.giejay.android.tv.immich.weather
 
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -66,9 +67,12 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
     }
 
     private fun bind(view: View, weather: Weather) {
+        val scene = WeatherCode.scene(weather.currentCode)
+        view.background = backgroundFor(scene)
+
         val animation = view.findViewById<WeatherAnimationView>(R.id.weather_animation)
         animation.setScene(
-            if (PreferenceManager.get(WEATHER_ANIMATED_BACKGROUND)) WeatherCode.scene(weather.currentCode)
+            if (PreferenceManager.get(WEATHER_ANIMATED_BACKGROUND)) scene
             else WeatherAnimationView.Scene.NONE
         )
 
@@ -88,11 +92,18 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
         statsLeft.removeAllViews()
         statsRight.removeAllViews()
         val statGap = (72 * resources.displayMetrics.density).toInt()
-        fun addStat(column: LinearLayout, value: String?, label: String) {
+        fun addStat(column: LinearLayout, value: String?, label: String, level: String? = null, levelColor: Int = 0) {
             if (value == null) return
             val item = inflater.inflate(R.layout.weather_stat, column, false)
             item.findViewById<TextView>(R.id.stat_value).text = value
             item.findViewById<TextView>(R.id.stat_label).text = label
+            if (level != null) {
+                item.findViewById<TextView>(R.id.stat_level).apply {
+                    text = level
+                    setTextColor(levelColor)
+                    visibility = View.VISIBLE
+                }
+            }
             val lp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -101,10 +112,16 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
             item.layoutParams = lp
             column.addView(item)
         }
-        addStat(statsLeft, weather.precipitation?.let { "$it ${weather.precipUnit}" }, getString(R.string.weather_precipitation))
         addStat(statsLeft, weather.humidity?.let { "$it%" }, getString(R.string.weather_humidity))
-        addStat(statsRight, weather.uvIndex?.let { "$it" }, getString(R.string.weather_uv))
-        addStat(statsRight, weather.aqi?.let { "$it" }, getString(R.string.weather_aqi))
+        addStat(statsLeft, weather.precipitation?.let { "$it ${weather.precipUnit}" }, getString(R.string.weather_precipitation))
+        weather.uvIndex?.let { uv ->
+            val (level, color) = uvLevel(uv)
+            addStat(statsRight, "$uv", getString(R.string.weather_uv), level, color)
+        }
+        weather.aqi?.let { aqi ->
+            val (level, color) = aqiLevel(aqi)
+            addStat(statsRight, "$aqi", getString(R.string.weather_aqi), level, color)
+        }
 
         val row = view.findViewById<LinearLayout>(R.id.forecast_row)
         row.removeAllViews()
@@ -117,6 +134,39 @@ class WeatherFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterPro
             item.findViewById<TextView>(R.id.day_hilo).text = "${day.high}° / ${day.low}°"
             row.addView(item)
         }
+    }
+
+    /** A vertical gradient tinted to the current conditions (warm for clear, cool for cloud/rain). */
+    private fun backgroundFor(scene: WeatherAnimationView.Scene): GradientDrawable {
+        val colors = when (scene) {
+            WeatherAnimationView.Scene.CLEAR -> intArrayOf(0xFF6B3B28.toInt(), 0xFFB06A40.toInt())
+            WeatherAnimationView.Scene.CLOUDS -> intArrayOf(0xFF2A313C.toInt(), 0xFF454F5E.toInt())
+            WeatherAnimationView.Scene.RAIN -> intArrayOf(0xFF1F2832.toInt(), 0xFF354554.toInt())
+            WeatherAnimationView.Scene.SNOW -> intArrayOf(0xFF2E3742.toInt(), 0xFF4C5965.toInt())
+            WeatherAnimationView.Scene.FOG -> intArrayOf(0xFF2B2E33.toInt(), 0xFF474B52.toInt())
+            WeatherAnimationView.Scene.THUNDER -> intArrayOf(0xFF181B22.toInt(), 0xFF2C313D.toInt())
+            else -> intArrayOf(0xFF14161A.toInt(), 0xFF24272E.toInt())
+        }
+        return GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, colors)
+    }
+
+    /** UV index -> (label, color) on the WHO scale. */
+    private fun uvLevel(uv: Int): Pair<String, Int> = when {
+        uv <= 2 -> "Low" to 0xFF66BB6A.toInt()
+        uv <= 5 -> "Moderate" to 0xFFFFCA28.toInt()
+        uv <= 7 -> "High" to 0xFFFFA726.toInt()
+        uv <= 10 -> "Very high" to 0xFFEF5350.toInt()
+        else -> "Extreme" to 0xFFAB47BC.toInt()
+    }
+
+    /** US AQI -> (label, color). */
+    private fun aqiLevel(aqi: Int): Pair<String, Int> = when {
+        aqi <= 50 -> "Good" to 0xFF66BB6A.toInt()
+        aqi <= 100 -> "Moderate" to 0xFFFFCA28.toInt()
+        aqi <= 150 -> "Poor" to 0xFFFFA726.toInt()
+        aqi <= 200 -> "Unhealthy" to 0xFFEF5350.toInt()
+        aqi <= 300 -> "Very poor" to 0xFFAB47BC.toInt()
+        else -> "Hazardous" to 0xFF8D6E63.toInt()
     }
 
     private fun dayName(isoDate: String): String = try {

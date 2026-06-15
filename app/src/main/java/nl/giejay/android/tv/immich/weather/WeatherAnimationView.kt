@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.os.SystemClock
@@ -50,6 +51,8 @@ class WeatherAnimationView @JvmOverloads constructor(
     private val fogBands = ArrayList<Band>()
     private val clouds = ArrayList<Band>()
     private var sunShader: RadialGradient? = null
+    private val cloudPath = Path()
+    private val locOnScreen = IntArray(2)
     private var sunPhase = 0f
     private var rayAngle = 0f
     private var flash = 0f
@@ -92,23 +95,23 @@ class WeatherAnimationView @JvmOverloads constructor(
                     18 + rnd.nextInt(16)
                 ))
             }
-            Scene.CLOUDS -> repeat(4) { i ->
+            Scene.CLOUDS -> repeat(3) { i ->
                 clouds.add(Band(
                     rnd.nextFloat() * w,
-                    h * (0.10f + 0.13f * i),
-                    w * (0.28f + rnd.nextFloat() * 0.18f),
+                    h * (0.13f + 0.15f * i),
+                    w * (0.34f + rnd.nextFloat() * 0.20f),
                     h * (0.10f + rnd.nextFloat() * 0.05f),
-                    (6f + rnd.nextFloat() * 8f) * d,
-                    22 + rnd.nextInt(18)
+                    (5f + rnd.nextFloat() * 6f) * d,
+                    60 + rnd.nextInt(45)
                 ))
             }
             Scene.CLEAR -> {
-                val cx = w * 0.80f
-                val cy = h * 0.22f
+                val cx = w * 0.82f
+                val cy = h * 0.24f
                 sunShader = RadialGradient(
-                    cx, cy, h * 0.5f,
-                    intArrayOf(0x99FFF6C8.toInt(), 0x33FFE08A, 0x00000000),
-                    floatArrayOf(0f, 0.45f, 1f),
+                    cx, cy, h * 0.55f,
+                    intArrayOf(0xCCFFE9A8.toInt(), 0x55FFD060, 0x00000000),
+                    floatArrayOf(0f, 0.4f, 1f),
                     Shader.TileMode.CLAMP
                 )
             }
@@ -179,7 +182,7 @@ class WeatherAnimationView @JvmOverloads constructor(
             Scene.THUNDER -> { drawRain(canvas, dt, w, h); drawThunder(canvas, dt, w, h) }
             Scene.SNOW -> drawSnow(canvas, dt, w, h)
             Scene.FOG -> drawBands(canvas, dt, w, fogBands, true)
-            Scene.CLOUDS -> drawBands(canvas, dt, w, clouds, false)
+            Scene.CLOUDS -> drawClouds(canvas, dt, w)
             Scene.CLEAR -> drawSun(canvas, dt, w, h)
             Scene.NONE -> {}
         }
@@ -250,31 +253,62 @@ class WeatherAnimationView @JvmOverloads constructor(
 
     private fun drawSun(canvas: Canvas, dt: Float, w: Float, h: Float) {
         sunPhase += dt
-        rayAngle += dt * 6f
-        val cx = w * 0.80f
-        val cy = h * 0.22f
-        val pulse = 0.85f + 0.15f * sin(sunPhase * 1.2f)
-        // Faint rotating rays.
+        rayAngle += dt * 8f
+        val core = h * 0.072f
+        val reach = core * 2.25f
+        // The view spans the full screen but is shifted right behind the sidebar, so part of it sits
+        // off the right edge. Anchor the sun to the *screen's* top-right corner (equal margins), not
+        // the view's, so it stays fully visible.
+        val margin = h * 0.10f
+        getLocationOnScreen(locOnScreen)
+        val screenRightInView = resources.displayMetrics.widthPixels - locOnScreen[0]
+        val cx = screenRightInView - margin - reach
+        val cy = margin + reach
+        val pulse = 0.96f + 0.04f * sin(sunPhase)
+
+        // Flat golden rays (short spikes), slowly rotating.
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 6f * density
-        paint.color = Color.rgb(255, 236, 170)
-        paint.alpha = 30
-        val rayInner = h * 0.18f
-        val rayOuter = h * 0.34f * pulse
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.strokeWidth = 7f * density
+        paint.color = 0xFFFFC83D.toInt()
+        paint.alpha = 210
+        val rInner = core * 1.3f
+        val rOuter = reach * pulse
         val n = 12
         for (i in 0 until n) {
-            val a = Math.toRadians((rayAngle + i * (360f / n)).toDouble())
+            val a = Math.toRadians(rayAngle + i * (360.0 / n))
             val ca = cos(a).toFloat()
             val sa = sin(a).toFloat()
-            canvas.drawLine(cx + rayInner * ca, cy + rayInner * sa, cx + rayOuter * ca, cy + rayOuter * sa, paint)
+            canvas.drawLine(cx + rInner * ca, cy + rInner * sa, cx + rOuter * ca, cy + rOuter * sa, paint)
         }
-        // Soft glow.
-        sunShader?.let {
-            paint.style = Paint.Style.FILL
-            paint.shader = it
-            paint.alpha = (220 * pulse).toInt().coerceIn(0, 255)
-            canvas.drawCircle(cx, cy, h * 0.5f, paint)
-            paint.shader = null
+        paint.strokeCap = Paint.Cap.BUTT
+
+        // Flat golden sun disk.
+        paint.style = Paint.Style.FILL
+        paint.color = 0xFFFFC83D.toInt()
+        canvas.drawCircle(cx, cy, core, paint)
+    }
+
+    /** Drifting fluffy clouds — each a union of overlapping circles drawn as one Path (uniform alpha). */
+    private fun drawClouds(canvas: Canvas, dt: Float, w: Float) {
+        paint.style = Paint.Style.FILL
+        paint.color = Color.WHITE
+        for (b in clouds) {
+            b.x += b.speed * dt
+            val halfW = b.w / 2f
+            if (b.x - halfW > w) b.x = -halfW
+            cloudPath.reset()
+            val cx = b.x
+            val cy = b.y
+            val cw = b.w
+            val r = b.h
+            cloudPath.addCircle(cx - cw * 0.30f, cy + b.h * 0.18f, r * 0.85f, Path.Direction.CW)
+            cloudPath.addCircle(cx - cw * 0.04f, cy + b.h * 0.24f, r * 1.05f, Path.Direction.CW)
+            cloudPath.addCircle(cx + cw * 0.26f, cy + b.h * 0.18f, r * 0.9f, Path.Direction.CW)
+            cloudPath.addCircle(cx - cw * 0.14f, cy, r * 0.95f, Path.Direction.CW)
+            cloudPath.addCircle(cx + cw * 0.10f, cy - b.h * 0.08f, r * 1.05f, Path.Direction.CW)
+            paint.alpha = b.alpha
+            canvas.drawPath(cloudPath, paint)
         }
     }
 }
